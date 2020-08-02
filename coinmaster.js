@@ -825,7 +825,7 @@ class CoinMaster {
     this.histories = await this.readHistoryData();
     //await this.fetchMetadata();
 
-    //await this.login();
+    await this.login();
     //await this.update_fb_data();
 
     let res = await this.getBalance();
@@ -1248,7 +1248,7 @@ class CoinMaster {
     const attackPriorities = ["Ship", "Statue", "Crop", "Farm", "House"];
     if (excludedAttack.some(x => x === userId)) return false;
     for (const item of attackPriorities) {
-      if (village[item] && village[item] > 0 && village[item] < 6) return true;
+      if (village[item] && village[item] > 0 && village[item] != 11) return true;
     }
     return false;
   }
