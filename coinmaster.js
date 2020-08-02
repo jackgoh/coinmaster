@@ -45,6 +45,7 @@ class CoinMaster {
    * }
    */
   constructor(options) {
+    this.mode = process.env.MODE || "coin";
     this.authToken = process.env.AUTH_TOKEN;
     this.syncTarget = options.syncTarget || process.env.SYNC_TARGET || null;
     this.questLevelLimit = parseInt(process.env.QUEST_LEVEL_LIMIT || "6");
@@ -459,7 +460,7 @@ class CoinMaster {
       )
     );
     this.dumpFile("spin", response);
-    if(shields == 3)
+    if(this.mode == "shield" && shields == 3)
         process.exit(0)
     return response;
   }
@@ -554,7 +555,7 @@ class CoinMaster {
     }
     this.dumpFile("balance", response);
     this.onData(response);
-    if(shields == 3)
+    if(this.mode == "shield" && shields == 3)
       process.exit(0)
     return response;
   }
