@@ -1338,7 +1338,7 @@ class CoinMaster {
 
     //console.log(`Attacking `, desireTarget);
     for (const item of attackPriorities) {
-      if (!village[item] || village[item] === 0 || village[item] == 11) continue;
+      if (!village[item] || village[item] === 0 || village[item] === 11) continue;
       console.log(
         colors.green(
           `Attacking ${desireTarget.name} , item = ${item}, state = ${village[item]}`
