@@ -459,6 +459,8 @@ class CoinMaster {
       )
     );
     this.dumpFile("spin", response);
+    if(shields == 3)
+        process.exit(0)
     return response;
   }
   async readSyncMessage(t) {
@@ -552,7 +554,8 @@ class CoinMaster {
     }
     this.dumpFile("balance", response);
     this.onData(response);
-
+    if(shields == 3)
+      process.exit(0)
     return response;
   }
   async feedFox(res) {
