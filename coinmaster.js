@@ -1,6 +1,7 @@
 require("dotenv").config();
 const qs = require("querystring");
 const getConfig = require("./config");
+const getLoginConfig = require("./loginConfig");
 const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
@@ -15,7 +16,8 @@ const excludedAttack = [
   "rof4__cjzn7tig40149hdli9tzz8f7g",
   "rof4__cjzgkbk3s02cib3k76fci3yw6",
   "rof4__ck09czjio03i2aulcfp5d1653",
-  "rof4__cjzq2ta7s01qgasl87kg5dmro"
+  "rof4__cjzq2ta7s01qgasl87kg5dmro",
+  "cipcd5mnz0250bhqfno48t6u7"
 ];
 // axiosRetry(axios, {
 //   retries: 3
@@ -46,6 +48,7 @@ class CoinMaster {
    */
   constructor(options) {
     this.mode = process.env.MODE || "coin";
+    this.refreshToken = process.env.REFRESH_TOKEN;
     this.authToken = process.env.AUTH_TOKEN;
     this.syncTarget = options.syncTarget || process.env.SYNC_TARGET || null;
     this.questLevelLimit = parseInt(process.env.QUEST_LEVEL_LIMIT || "6");
@@ -70,6 +73,7 @@ class CoinMaster {
     this.deviceId = options.deviceId || process.env.DEVICE_ID;
     this.deviceChange = options.deviceChange || process.env.DEVICE_CHANGE;
     this.config = getConfig(this.deviceId, this.deviceChange, this.fbToken);
+    this.loginConfig = getLoginConfig(this.deviceId, this.deviceChange, this.fbToken);
     this.attackPrefer = options.attackPrefer || process.env.ATTACK_PREFER;
     this.attackTarget = options.attackTarget || process.env.ATTACK_TARGET || "";
     this.attackRaidGap = options.attackRaidGap || parseInt(process.env.ATTACK_RAID_GAP || "5", 10),
@@ -98,11 +102,17 @@ class CoinMaster {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "authorization": "Bearer " + this.authToken,
-        "x-client-version": "3.5.62",
+        "x-client-version": "3.5.120",
         "user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36",
         "x-platform": "WebGL"
       }
     };
+    this.loginAxiosConfig = {
+      headers: {
+        "authorization": "Bearer " + this.refreshToken,
+        "x-client-version": "3.5.120",
+      }
+    }
     fs.mkdirSync(path.join(__dirname, "data", this.userId), {recursive : true});
     this.dataFile = path.join(__dirname, "data", this.userId,  "spin.csv");
     this.spinResult = null;
@@ -348,6 +358,39 @@ class CoinMaster {
         url,
         qs.stringify(formData),
         this.axiosConfig
+      );
+      const info = response.data;
+
+      return info;
+    } catch (err) {
+      console.log("Error".red, err.response.status, err.response.statusText, url);
+      console.log(err.response.data)
+      // if (retry < 3) {
+      // return this.post(url, data, retry + 1);
+      //}
+    }
+    return null;
+  }
+  async postLogin(url, data, retry) {
+    if (url.indexOf("http") === -1) {
+      url = `https://vik-game.moonactive.net/api/v1/users/${this.userId}/${url}`;
+    }
+    data = data || {};
+    retry = retry || 0;
+    const formData = {
+      ...this.loginConfig,
+      ...data
+    };
+    try {
+      if (this.verbose) {
+        console.log(colors.dim(`#${retry + 1} Request Url : ${url}`), data);
+        console.log("Form data", qs.stringify(formData));
+      }
+
+      const response = await axios.post(
+        url,
+        qs.stringify(formData),
+        this.loginAxiosConfig
       );
       const info = response.data;
 
@@ -749,13 +792,13 @@ class CoinMaster {
       seq: 0,
       fbToken: ""
     };
-    if (useToken) data.fbToken = this.config.fbToken;
 
-    const res = await this.post(
+    const res = await this.postLogin(
       "https://vik-game.moonactive.net/api/v1/users/login",
       data
     );
-    console.log("Login result", res);
+
+    process.env['AUTH_TOKEN'] = res.sessionToken;
   }
   async doQuickSpin(spinLimit, moneyLimit) {
     let res = await this.getBalance();
