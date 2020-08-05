@@ -98,15 +98,7 @@ class CoinMaster {
     this.shieldCountFromAttack = 0;
     console.log("Auto switcher at", this.raidBetSwitch, this.attackBetSwitch);
     console.log("Enemy target", this.attackTarget);
-    this.axiosConfig = {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "authorization": "Bearer " + this.authToken,
-        "x-client-version": "3.5.120",
-        "user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36",
-        "x-platform": "WebGL"
-      }
-    };
+    this.axiosConfig = {};
     this.loginAxiosConfig = {
       headers: {
         "authorization": "Bearer " + this.refreshToken,
@@ -122,6 +114,18 @@ class CoinMaster {
       this.rewards = JSON.parse(fs.readFileSync(this.rewardLogFile, "utf8"));
     }
     console.log("USER:", this.userId, this.authToken);
+  }
+
+  async setupAxios(){
+    this.axiosConfig = {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "authorization": "Bearer " + this.authToken,
+        "x-client-version": "3.5.120",
+        "user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36",
+        "x-platform": "WebGL"
+      }
+    };
   }
   async syncCardToAllFriends(){
     const {friends } = await this.post("friends");
@@ -798,7 +802,8 @@ class CoinMaster {
       data
     );
 
-    process.env['AUTH_TOKEN'] = res.sessionToken;
+    this.authToken= res.sessionToken;
+    this.setupAxios();
   }
   async doQuickSpin(spinLimit, moneyLimit) {
     let res = await this.getBalance();
