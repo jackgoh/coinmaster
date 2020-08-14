@@ -114,7 +114,7 @@ class CoinMaster {
     if(fs.existsSync(this.rewardLogFile)){
       this.rewards = JSON.parse(fs.readFileSync(this.rewardLogFile, "utf8"));
     }
-    console.log("USER:", this.userId, this.authToken);
+    console.log("USER:", this.userId);
   }
 
   async setupAxios(){
@@ -508,8 +508,10 @@ class CoinMaster {
       )
     );
     this.dumpFile("spin", response);
-    if(this.mode == "shield" && shields == this.maxShields)
+    if(this.mode == "shield" && shields == this.maxShields){
+        await this.upgrade(response)
         process.exit(0)
+    }
     return response;
   }
   async readSyncMessage(t) {
@@ -603,8 +605,10 @@ class CoinMaster {
     }
     this.dumpFile("balance", response);
     this.onData(response);
-    if(this.mode == "shield" && shields == this.maxShields)
+    if(this.mode == "shield" && shields == this.maxShields){
+      await this.upgrade(response); 
       process.exit(0)
+    }
     return response;
   }
   async feedFox(res) {
@@ -1460,8 +1464,6 @@ class CoinMaster {
     console.log("Purchase", response.chest);
   }
   async upgrade(spinResult) {
-    // this.allowUpgrade=false;
-
     if (!spinResult || !this.allowUpgrade) return spinResult;
     console.log("************************* Running Upgrade **********************".magenta);
 
