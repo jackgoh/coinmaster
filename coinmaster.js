@@ -17,6 +17,7 @@ const excludedAttack = [
   "rof4__cjzgkbk3s02cib3k76fci3yw6",
   "rof4__ck09czjio03i2aulcfp5d1653",
   "rof4__cjzq2ta7s01qgasl87kg5dmro",
+  "rof42__ck87ipcog0039hjlk8ucz724f",
   "cipcd5mnz0250bhqfno48t6u7"
 ];
 // axiosRetry(axios, {
